@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 
-class NoteDetail extends StatefulWidget {
+import 'dart:async';
+import 'package:sqflite/sql.dart';
 
+import 'package:flutter_notekeeper/models/note.dart';
+import 'package:flutter_notekeeper/utils/database_helper.dart';
+import 'package:intl/intl.dart';
+
+class NoteDetail extends StatefulWidget {
   String appBarTitle = "";
+
   NoteDetail(this.appBarTitle);
 
   @override
@@ -14,6 +21,7 @@ class _NoteDetailState extends State<NoteDetail> {
   var _defaultPriority = "";
 
   String barTitle = "";
+
   _NoteDetailState(this.barTitle);
 
   TextEditingController titleController = TextEditingController();
@@ -35,48 +43,42 @@ class _NoteDetailState extends State<NoteDetail> {
 
   @override
   Widget build(BuildContext context) {
-    TextStyle textStyle = Theme
-        .of(context)
-        .textTheme
-        .title;
+    TextStyle textStyle = Theme.of(context).textTheme.title;
 
     return WillPopScope(
-      onWillPop: (){
+      onWillPop: () {
         moveToLastScreen();
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(this.barTitle),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios),
-            onPressed:(){
-              moveToLastScreen();
-            } ,
-          )
-        ),
+            title: Text(this.barTitle),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios),
+              onPressed: () {
+                moveToLastScreen();
+              },
+            )),
         body: Padding(
           padding: EdgeInsets.only(top: 15.0, left: 10.0, right: 10.0),
           child: ListView(
             children: <Widget>[
-
               //first element
               ListTile(
                   title: DropdownButton(
-                    items: _priorities.map((String aPriotity) {
-                      return DropdownMenuItem(
-                        value: aPriotity,
-                        child: Text(aPriotity),
-                      );
-                    }).toList(),
-                    onChanged: (selectedPriority) {
-                      setState(() {
-                        debugPrint("User selected $selectedPriority");
-                      });
-                    },
-                    style: textStyle,
-                    value: this._getDefaultPriority(),
-                  )
-              ),
+                items: _priorities.map((String aPriotity) {
+                  return DropdownMenuItem(
+                    value: aPriotity,
+                    child: Text(aPriotity),
+                  );
+                }).toList(),
+                onChanged: (selectedPriority) {
+                  setState(() {
+                    debugPrint("User selected $selectedPriority");
+                  });
+                },
+                style: textStyle,
+                value: this._getDefaultPriority(),
+              )),
 
               //second element
               Padding(
@@ -91,9 +93,7 @@ class _NoteDetailState extends State<NoteDetail> {
                       labelText: "Title",
                       labelStyle: textStyle,
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5.0)
-                      )
-                  ),
+                          borderRadius: BorderRadius.circular(5.0))),
                 ),
               ),
 
@@ -110,9 +110,7 @@ class _NoteDetailState extends State<NoteDetail> {
                       labelText: "Description",
                       labelStyle: textStyle,
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5.0)
-                      )
-                  ),
+                          borderRadius: BorderRadius.circular(5.0))),
                 ),
               ),
 
@@ -121,18 +119,16 @@ class _NoteDetailState extends State<NoteDetail> {
                 padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
                 child: Row(
                   children: <Widget>[
-
                     //button 1
                     Expanded(
-                      child:
-                      RaisedButton(
-                      color: Theme.of(context).primaryColorDark,
-                      textColor: Theme.of(context).primaryColorLight,
-                        child:Text(
+                      child: RaisedButton(
+                        color: Theme.of(context).primaryColorDark,
+                        textColor: Theme.of(context).primaryColorLight,
+                        child: Text(
                           "Save",
                           textScaleFactor: 1.5,
                         ),
-                        onPressed: (){
+                        onPressed: () {
                           setState(() {
                             debugPrint("Save clicked");
                           });
@@ -146,22 +142,20 @@ class _NoteDetailState extends State<NoteDetail> {
 
                     //button 2
                     Expanded(
-                      child:
-                      RaisedButton(
+                      child: RaisedButton(
                         color: Theme.of(context).primaryColorDark,
                         textColor: Theme.of(context).primaryColorLight,
-                        child:Text(
+                        child: Text(
                           "delete",
                           textScaleFactor: 1.5,
                         ),
-                        onPressed: (){
+                        onPressed: () {
                           setState(() {
                             debugPrint("Delete clicked");
                           });
                         },
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -172,7 +166,7 @@ class _NoteDetailState extends State<NoteDetail> {
     );
   }
 
-  void moveToLastScreen(){
+  void moveToLastScreen() {
     Navigator.pop(context);
   }
 }
