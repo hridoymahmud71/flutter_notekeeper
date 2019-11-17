@@ -1,0 +1,4 @@
+#Sun Nov 17 14:11:32 BDT 2019
+base.0=H\:\\Hridoy\\flutter_notekeeper\\build\\app\\intermediates\\dex\\debug\\mergeDexDebug\\out\\classes.dex
+path.0=classes.dex
+renamed.0=classes.dex
