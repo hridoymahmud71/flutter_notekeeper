@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'dart:async';
-import 'package:sqflite/sql.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'package:flutter_notekeeper/screens/note_detail.dart';
 import 'package:flutter_notekeeper/models/note.dart';
 import 'package:flutter_notekeeper/utils/database_helper.dart';
+import 'package:flutter_notekeeper/utils/date_helper.dart';
+
 
 class NoteList extends StatefulWidget {
   @override
@@ -16,6 +18,25 @@ class _NoteListState extends State<NoteList> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   List<Note> noteList;
   int count = 0;
+
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void addDummyNotes(){
+    List<Note> noteList = List<Note>();
+    Note n1 = Note("A",DateHelper.stringDateNow(),2);
+    Note n2 = Note("fggdgdg",DateHelper.stringDateNow(),1);
+    Note n3 = Note("sdfsdf",DateHelper.stringDateNow(),3);
+    noteList.add(n1);
+    noteList.add(n2);
+    noteList.add(n3);
+
+    this.noteList = noteList;
+    this.count = noteList.length;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +52,7 @@ class _NoteListState extends State<NoteList> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           debugPrint("FBA  pressed");
-          navigateToDetail("Add A Note");
+          navigateToDetail(Note('','',2),"Add A Note");
         },
         tooltip: "Add a note",
         child: Icon(Icons.add),
@@ -66,21 +87,26 @@ class _NoteListState extends State<NoteList> {
                 ),
                 onTap: (){
                   deleteNote(context, noteList[position]);
+                  updateListView();
                 },
               ),
               onTap: () {
                 debugPrint("List title tapped");
-                navigateToDetail("Edit the Note");
+                navigateToDetail(Note(this.noteList[position].title,this.noteList[position].date,this.noteList[position].priority),"Edit the Note");
               },
             ),
           );
         });
   }
 
-  void navigateToDetail(String title) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return NoteDetail(title);
+  void navigateToDetail(Note note, String title) async {
+    bool res = await Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return NoteDetail(note,title);
     }));
+
+    if(res == true){
+      updateListView();
+    }
   }
 
 
@@ -91,7 +117,21 @@ class _NoteListState extends State<NoteList> {
     }
   }
   void updateListView(){
-    
+    addDummyNotes();return;
+    Future<Database> dbFuture = databaseHelper.initializeDb();
+
+
+    dbFuture.then((database){
+
+      Future<List<Note>> futureNoteList = databaseHelper.getNoteList();
+      futureNoteList.then((noteList){
+        setState(() {
+          this.noteList = noteList;
+          this.count = noteList.length;
+        });
+      });
+
+    });
   }
 
   //helper 1
@@ -110,6 +150,7 @@ class _NoteListState extends State<NoteList> {
         return Colors.lightBlue;
     }
   }
+
 
   //helper 2
   Icon getPriorityIcon(int priority) {

@@ -16,8 +16,8 @@ class DatabaseHelper {
   String noteTable_colId = "id";
   String noteTable_colTitle = "title";
   String noteTable_colDescription = "description";
-  String noteTable_colPriority = "date";
-  String noteTable_colDate = "priority";
+  String noteTable_colPriority = "priority";
+  String noteTable_colDate = "date";
 
   factory DatabaseHelper() {
     if (_databaseHelper == null) {
@@ -79,18 +79,32 @@ class DatabaseHelper {
   //delete
   Future<int> deleteNote(Note note) async {
     Database db = await _database;
-    var result = db.delete(noteTable_tableName, where: "$noteTable_colId=?", whereArgs: [note.id]);
+    var result = db.delete(noteTable_tableName,
+        where: "$noteTable_colId=?", whereArgs: [note.id]);
     return result;
   }
 
   //item count
   Future<int> getCount(Note note) async {
     Database db = await _database;
-    List<Map<String,dynamic>> list = await db.rawQuery("SELECT COUNT(*) FROM $noteTable_tableName");
+    List<Map<String, dynamic>> list =
+        await db.rawQuery("SELECT COUNT(*) FROM $noteTable_tableName");
     var result = Sqflite.firstIntValue(list);
     return result;
   }
 
-  //get
+  //get note list
 
+  Future<List<Note>> getNoteList() async {
+    var noteMapList = await getNoteMapList();
+
+    int itemCount = noteMapList.length;
+    List<Note> noteList = List<Note>();
+
+    for (int i = 0; i < noteMapList.length; i++) {
+      noteList.add(Note.fromMapObject(noteMapList[i]));
+    }
+
+    return noteList;
+  }
 }

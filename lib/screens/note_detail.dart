@@ -1,28 +1,34 @@
 import 'package:flutter/material.dart';
 
 import 'dart:async';
-import 'package:sqflite/sql.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'package:flutter_notekeeper/models/note.dart';
 import 'package:flutter_notekeeper/utils/database_helper.dart';
+import 'package:flutter_notekeeper/utils/date_helper.dart';
 import 'package:intl/intl.dart';
 
 class NoteDetail extends StatefulWidget {
   String appBarTitle = "";
+  final Note note;
 
-  NoteDetail(this.appBarTitle);
+  NoteDetail(this.note, this.appBarTitle);
 
   @override
-  _NoteDetailState createState() => _NoteDetailState(this.appBarTitle);
+  _NoteDetailState createState() =>
+      _NoteDetailState(this.note, this.appBarTitle);
 }
 
 class _NoteDetailState extends State<NoteDetail> {
   var _priorities = ["High", "Medium", "Low"];
   var _defaultPriority = "";
+  final Note currentNote;
 
   String barTitle = "";
 
-  _NoteDetailState(this.barTitle);
+  _NoteDetailState(this.currentNote, this.barTitle);
+
+  DatabaseHelper databaseHelper = DatabaseHelper();
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
@@ -30,7 +36,7 @@ class _NoteDetailState extends State<NoteDetail> {
   @override
   void initState() {
     super.initState();
-    setDefaultPriority();
+    currentNote!= null ? debugPrint(currentNote.toString()) : debugPrint("Note is null");
   }
 
   void setDefaultPriority() {
@@ -44,6 +50,9 @@ class _NoteDetailState extends State<NoteDetail> {
   @override
   Widget build(BuildContext context) {
     TextStyle textStyle = Theme.of(context).textTheme.title;
+
+    titleController.text = currentNote.title;
+    descriptionController.text = currentNote.description;
 
     return WillPopScope(
       onWillPop: () {
@@ -74,10 +83,11 @@ class _NoteDetailState extends State<NoteDetail> {
                 onChanged: (selectedPriority) {
                   setState(() {
                     debugPrint("User selected $selectedPriority");
+                    updatePriority(priorityToInt(selectedPriority));
                   });
                 },
                 style: textStyle,
-                value: this._getDefaultPriority(),
+                value: priorityToString(currentNote.priority),
               )),
 
               //second element
@@ -88,6 +98,7 @@ class _NoteDetailState extends State<NoteDetail> {
                   style: textStyle,
                   onChanged: (value) {
                     debugPrint("Title changed .Change is $value");
+                    updateTitle(value);
                   },
                   decoration: InputDecoration(
                       labelText: "Title",
@@ -105,6 +116,7 @@ class _NoteDetailState extends State<NoteDetail> {
                   style: textStyle,
                   onChanged: (value) {
                     debugPrint("Description changed .Change is $value");
+                    updateDesctiption(value);
                   },
                   decoration: InputDecoration(
                       labelText: "Description",
@@ -131,6 +143,7 @@ class _NoteDetailState extends State<NoteDetail> {
                         onPressed: () {
                           setState(() {
                             debugPrint("Save clicked");
+                            _save();
                           });
                         },
                       ),
@@ -152,6 +165,7 @@ class _NoteDetailState extends State<NoteDetail> {
                         onPressed: () {
                           setState(() {
                             debugPrint("Delete clicked");
+                            _delete();
                           });
                         },
                       ),
@@ -167,6 +181,84 @@ class _NoteDetailState extends State<NoteDetail> {
   }
 
   void moveToLastScreen() {
-    Navigator.pop(context);
+    Navigator.pop(context,true);
+  }
+
+  //updates
+  void updateTitle(String title) {
+    currentNote.title = titleController.text;
+  }
+
+  void updateDesctiption(String description) {
+    currentNote.description = descriptionController.text;
+  }
+
+  void updatePriority(int priority) {
+    currentNote.priority = priority;
+  }
+
+  void _save() async {
+    moveToLastScreen();
+    currentNote.date = DateHelper.stringDateNow();
+    int res;
+    if (currentNote.id == null) {
+      res = await databaseHelper.insertNote(currentNote);
+    } else {
+      res = await databaseHelper.updateNote(currentNote);
+    }
+
+    if (res == 0) {
+      _showAlert("Problem", "Could not save the note");
+    } else {
+      _showAlert("Successful", "Note is saved");
+    }
+  }
+
+  void _delete() async {
+    moveToLastScreen();
+    currentNote.date = DateHelper.stringDateNow();
+    int res;
+    if (currentNote.id == null) {
+      _showAlert("Messaage", "Nothing to delete");
+      return;
+    }
+    res = await databaseHelper.deleteNote(currentNote);
+
+    if (res == 0) {
+      _showAlert("Problem", "Could not delete the note");
+    } else {
+      _showAlert("Successful", "Note is deleted");
+    }
+  }
+
+  void _showAlert(String status, String message) {
+    AlertDialog alertDialog = AlertDialog(
+      title: Text(status),
+      content: Text(message),
+    );
+
+    showDialog(context: context, builder: (_) => alertDialog);
+  }
+
+  //priority int to string
+  int priorityToInt(String priority) {
+    switch (priority) {
+      case "High":
+        return 3;
+        break;
+      case "Medium":
+        return 2;
+      case "Low":
+        return 1;
+      default:
+        return 2;
+    }
+  }
+
+  //priority string to int
+  String priorityToString(int priority) {
+    return priority >= 1 && priority <= 3
+        ? _priorities[priority - 1]
+        : _priorities[1]; //medium;
   }
 }

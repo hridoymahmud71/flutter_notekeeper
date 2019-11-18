@@ -14,7 +14,7 @@ class Note {
 
   String get title => _title;
 
-  String get _ate => _date;
+  String get date => _date;
 
   String get description => description;
 
@@ -68,4 +68,5 @@ class Note {
     this._date = map['date'];
     this._priority = map['priority'];
   }
+
 }
