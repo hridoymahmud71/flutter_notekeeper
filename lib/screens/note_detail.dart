@@ -20,9 +20,11 @@ class NoteDetail extends StatefulWidget {
 }
 
 class _NoteDetailState extends State<NoteDetail> {
-  var _priorities = ["High", "Medium", "Low"];
+  var _priorities = ["Low", "Medium", "High"];
   var _defaultPriority = "";
   final Note currentNote;
+
+  var _formKey = GlobalKey<FormState>();
 
   String barTitle = "";
 
@@ -36,7 +38,9 @@ class _NoteDetailState extends State<NoteDetail> {
   @override
   void initState() {
     super.initState();
-    currentNote!= null ? debugPrint(currentNote.toString()) : debugPrint("Note is null");
+    currentNote != null
+        ? debugPrint(currentNote.toString())
+        : debugPrint("Note is null");
   }
 
   void setDefaultPriority() {
@@ -67,121 +71,128 @@ class _NoteDetailState extends State<NoteDetail> {
                 moveToLastScreen();
               },
             )),
-        body: Padding(
-          padding: EdgeInsets.only(top: 15.0, left: 10.0, right: 10.0),
-          child: ListView(
-            children: <Widget>[
-              //first element
-              ListTile(
-                  title: DropdownButton(
-                items: _priorities.map((String aPriotity) {
-                  return DropdownMenuItem(
-                    value: aPriotity,
-                    child: Text(aPriotity),
-                  );
-                }).toList(),
-                onChanged: (selectedPriority) {
-                  setState(() {
-                    debugPrint("User selected $selectedPriority");
-                    updatePriority(priorityToInt(selectedPriority));
-                  });
-                },
-                style: textStyle,
-                value: priorityToString(currentNote.priority),
-              )),
+        body: Form(
+            key: _formKey,
+            child: Padding(
+              padding: EdgeInsets.only(top: 15.0, left: 10.0, right: 10.0),
+              child: ListView(
+                children: <Widget>[
+                  //first element
+                  ListTile(
+                      title: DropdownButton(
+                    items: _priorities.map((String aPriotity) {
+                      return DropdownMenuItem(
+                        value: aPriotity,
+                        child: Text(aPriotity),
+                      );
+                    }).toList(),
+                    onChanged: (selectedPriority) {
+                      setState(() {
+                        debugPrint("User selected $selectedPriority");
+                        updatePriority(priorityToInt(selectedPriority));
+                      });
+                    },
+                    style: textStyle,
+                    value: priorityToString(currentNote.priority),
+                  )),
 
-              //second element
-              Padding(
-                padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
-                child: TextField(
-                  controller: titleController,
-                  style: textStyle,
-                  onChanged: (value) {
-                    debugPrint("Title changed .Change is $value");
-                    updateTitle(value);
-                  },
-                  decoration: InputDecoration(
-                      labelText: "Title",
-                      labelStyle: textStyle,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5.0))),
-                ),
-              ),
+                  //second element
+                  Padding(
+                    padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+                    child: TextFormField(
+                      controller: titleController,
+                      validator: (String value){
+                        if(value.isEmpty){
+                          return "Please enter title";
+                        }
+                      },
+                      style: textStyle,
+                      onChanged: (value) {
+                        debugPrint("Title changed .Change is $value");
+                        updateTitle(value);
+                      },
+                      decoration: InputDecoration(
+                          labelText: "Title",
+                          labelStyle: textStyle,
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5.0))),
+                    ),
+                  ),
 
-              // third element
-              Padding(
-                padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
-                child: TextField(
-                  controller: descriptionController,
-                  style: textStyle,
-                  onChanged: (value) {
-                    debugPrint("Description changed .Change is $value");
-                    updateDesctiption(value);
-                  },
-                  decoration: InputDecoration(
-                      labelText: "Description",
-                      labelStyle: textStyle,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5.0))),
-                ),
-              ),
+                  // third element
+                  Padding(
+                    padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+                    child: TextField(
+                      controller: descriptionController,
+                      style: textStyle,
+                      onChanged: (value) {
+                        debugPrint("Description changed .Change is $value");
+                        updateDesctiption(value);
+                      },
+                      decoration: InputDecoration(
+                          labelText: "Description",
+                          labelStyle: textStyle,
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5.0))),
+                    ),
+                  ),
 
-              // fourth element
-              Padding(
-                padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
-                child: Row(
-                  children: <Widget>[
-                    //button 1
-                    Expanded(
-                      child: RaisedButton(
-                        color: Theme.of(context).primaryColorDark,
-                        textColor: Theme.of(context).primaryColorLight,
-                        child: Text(
-                          "Save",
-                          textScaleFactor: 1.5,
+                  // fourth element
+                  Padding(
+                    padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+                    child: Row(
+                      children: <Widget>[
+                        //button 1
+                        Expanded(
+                          child: RaisedButton(
+                            color: Theme.of(context).primaryColorDark,
+                            textColor: Theme.of(context).primaryColorLight,
+                            child: Text(
+                              "Save",
+                              textScaleFactor: 1.5,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                debugPrint("Save clicked");
+                                _save();
+                              });
+                            },
+                          ),
                         ),
-                        onPressed: () {
-                          setState(() {
-                            debugPrint("Save clicked");
-                            _save();
-                          });
-                        },
-                      ),
-                    ),
 
-                    Container(
-                      width: 5.0,
-                    ),
-
-                    //button 2
-                    Expanded(
-                      child: RaisedButton(
-                        color: Theme.of(context).primaryColorDark,
-                        textColor: Theme.of(context).primaryColorLight,
-                        child: Text(
-                          "delete",
-                          textScaleFactor: 1.5,
+                        Container(
+                          width: 5.0,
                         ),
-                        onPressed: () {
-                          setState(() {
-                            debugPrint("Delete clicked");
-                            _delete();
-                          });
-                        },
-                      ),
+
+                        //button 2
+                        Expanded(
+                          child: RaisedButton(
+                            color: Theme.of(context).primaryColorDark,
+                            textColor: Theme.of(context).primaryColorLight,
+                            child: Text(
+                              "delete",
+                              textScaleFactor: 1.5,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                debugPrint("Delete clicked");
+                                _delete();
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            )),
       ),
     );
   }
 
   void moveToLastScreen() {
-    Navigator.pop(context,true);
+    Navigator.pop(context, true);
   }
 
   //updates
@@ -198,9 +209,13 @@ class _NoteDetailState extends State<NoteDetail> {
   }
 
   void _save() async {
+    if(!_formKey.currentState.validate()){
+      return;
+    }
     moveToLastScreen();
     currentNote.date = DateHelper.stringDateNow();
     int res;
+    debugPrint("currentNote:${currentNote.toMap().toString()}");
     if (currentNote.id == null) {
       res = await databaseHelper.insertNote(currentNote);
     } else {

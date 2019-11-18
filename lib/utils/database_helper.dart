@@ -28,9 +28,10 @@ class DatabaseHelper {
   }
 
   Future<Database> get database async {
-    if (_database = null) {
+    if (_database == null) {
       _database = await initializeDb();
     }
+    return _database;
   }
 
   Future<Database> initializeDb() async {
@@ -55,38 +56,38 @@ class DatabaseHelper {
 
   //list
   Future<List<Map<String, dynamic>>> getNoteMapList() async {
-    Database db = await _database;
-    var result =
+    Database db = await this.database;
+    var result = await
         db.query(noteTable_tableName, orderBy: "$noteTable_colPriority");
     return result;
   }
 
   //insert
   Future<int> insertNote(Note note) async {
-    Database db = await _database;
-    var result = db.insert(noteTable_tableName, note.toMap());
+    Database db = await this.database;
+    var result = await db.insert(noteTable_tableName, note.toMap());
     return result;
   }
 
   //update
   Future<int> updateNote(Note note) async {
-    Database db = await _database;
-    var result = db.update(noteTable_tableName, note.toMap(),
+    Database db = await this.database;
+    var result = await db.update(noteTable_tableName, note.toMap(),
         where: "$noteTable_colId=?", whereArgs: [note.id]);
     return result;
   }
 
   //delete
   Future<int> deleteNote(Note note) async {
-    Database db = await _database;
-    var result = db.delete(noteTable_tableName,
+    Database db = await this.database;
+    var result = await  db.delete(noteTable_tableName,
         where: "$noteTable_colId=?", whereArgs: [note.id]);
     return result;
   }
 
   //item count
   Future<int> getCount(Note note) async {
-    Database db = await _database;
+    Database db = await this.database;
     List<Map<String, dynamic>> list =
         await db.rawQuery("SELECT COUNT(*) FROM $noteTable_tableName");
     var result = Sqflite.firstIntValue(list);

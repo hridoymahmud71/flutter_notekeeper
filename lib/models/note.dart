@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+
 class Note {
   int _id;
   String _title;
@@ -16,7 +18,7 @@ class Note {
 
   String get date => _date;
 
-  String get description => description;
+  String get description => _description;
 
   int get priority => _priority;
 
@@ -37,7 +39,7 @@ class Note {
   }
 
   set date(String date) {
-    this._date = date.substring(0, 255);
+    this._date = date;
   }
 
   set priority(int priority) {
@@ -48,11 +50,12 @@ class Note {
     }
   }
 
-  Map<String,dynamic> toMap(){
+  Map<String, dynamic> toMap() {
+    var note_map = Map<String, dynamic>();
 
-    var note_map = Map<String,dynamic>();
-
-    note_map['id'] = _id != null ? _id:0;
+    if (_id != null) {
+      note_map['id'] = _id;
+    }
     note_map['title'] = _title;
     note_map['description'] = _description;
     note_map['date'] = _date;
@@ -61,12 +64,11 @@ class Note {
     return note_map;
   }
 
-  Note.fromMapObject(Map<String,dynamic> map){
+  Note.fromMapObject(Map<String, dynamic> map) {
     this._id = map['id'];
     this._title = map['title'];
     this._description = map['description'];
     this._date = map['date'];
     this._priority = map['priority'];
   }
-
 }
